@@ -3,17 +3,21 @@ package es.aritzherrero.ejercicioe.controlador;
 import es.aritzherrero.ejercicioe.modelo.Persona;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+
+import java.net.URL;
+import java.util.ResourceBundle;
 
 /**
  * Controlador para la ventana de "Nueva Persona" en la aplicación.
  * Permite gestionar la creación de nuevas instancias de la clase Persona
  * y cerrar la ventana modal correspondiente.
  */
-public class EjercicioE_NuevaPersona_Control {
+public class EjercicioE_NuevaPersona_Control implements Initializable {
 
     @FXML
     private Button btnCancelar;
@@ -30,8 +34,10 @@ public class EjercicioE_NuevaPersona_Control {
     @FXML
     private TextField txtNombre;
 
+    String camposNulos;
+
     /**
-     * Porcedimiento que se ejecuta cuando se presiona el botón "Cancelar".
+     * Procedimiento que se ejecuta cuando se presiona el botón "Cancelar".
      * Cierra la ventana modal actual.
      *
      * @param event El evento de acción asociado al botón.
@@ -53,81 +59,102 @@ public class EjercicioE_NuevaPersona_Control {
      */
     @FXML
     void guardarPersona(ActionEvent event) {
-        // Valida los campos del formulario y guarda el mensaje de error.
-        String errorMessage = validarCampos();
-
-        // Si hay un mensaje de error, muestra una alerta y termina la ejecución.
-        if (!errorMessage.isEmpty()) {
-            EjercicioE_Principal_Control.ventanaAlerta("E", errorMessage);
-            return;
+        // Si no hay nombre en la persona actual, se agrega una nueva.
+        if (EjercicioE_Principal_Control.p.getNombre().equals("")) {
+            aniadir();
+        } else {
+            // Si ya existe, se modifica.
+            modificar();
         }
+        // Cierra la ventana después de guardar o modificar.
+        cancelarVentana(event);
+    }
 
+    /**
+     * Procedimiento para añadir una nueva persona después de validar los datos.
+     */
+    void aniadir() {
+        String camposNulos = ""; // Reinicia la variable para campos nulos
         try {
-            // Crea una nueva persona a partir de los datos del formulario.
-            Persona nuevaPersona = crearPersonaDesdeCampos();
-
-            // Verifica si la persona ya existe en la lista.
-            if (EjercicioE_Principal_Control.listaPersonas.contains(nuevaPersona)) {
-                EjercicioE_Principal_Control.ventanaAlerta("E", "La persona ya existe");
-            } else {
-                // Añade la nueva persona a la lista y muestra un mensaje de éxito.
-                EjercicioE_Principal_Control.listaPersonas.add(nuevaPersona);
-                EjercicioE_Principal_Control.ventanaAlerta("C", "Persona añadida correctamente");
-
-                // Cierra la ventana modal después de guardar la persona.
-                Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-                stage.close();
+            // Verifica que los campos no estén vacíos
+            if (txtNombre.getText().equals("")) {
+                camposNulos = "El campo nombre es obligatorio\n";
             }
+            if (txtApellidos.getText().equals("")) {
+                camposNulos += "El campo apellidos es obligatorio\n";
+            }
+            if (txtEdad.getText().isEmpty()) {
+                camposNulos += "El campo edad es obligatorio";
+            }
+            // Lanza excepción si hay campos nulos
+            if (!camposNulos.isEmpty()) {
+                throw new NullPointerException();
+            }
+            // Verifica que la edad sea un número mayor que cero
+            if (Integer.parseInt(txtEdad.getText().toString()) < 1) {
+                throw new NumberFormatException();
+            }
+
+            // Crear persona
+            String nombre = txtNombre.getText();
+            String apellidos = txtApellidos.getText();
+            Integer edad = Integer.parseInt(txtEdad.getText());
+            Persona p = new Persona(nombre, apellidos, edad);
+            // Verifica si la persona ya existe antes de agregarla
+            if (!EjercicioE_Principal_Control.listaPersonas.contains(p)) {
+                EjercicioE_Principal_Control.listaPersonas.add(p);
+                EjercicioE_Principal_Control.ventanaAlerta("I", "Persona añadida correctamente");
+            } else {
+                EjercicioE_Principal_Control.ventanaAlerta("E", "La persona ya existe");
+            }
+        } catch (NullPointerException e) {
+            // Muestra alerta si hay campos vacíos
+            EjercicioE_Principal_Control.ventanaAlerta("E", camposNulos);
         } catch (NumberFormatException e) {
-            // Si la edad no es un número válido, muestra una alerta.
+            // Muestra alerta si la edad no es un número válido
             EjercicioE_Principal_Control.ventanaAlerta("E", "El valor de edad debe ser un número mayor que cero");
         }
     }
 
     /**
-     * Valida los campos del formulario y genera un mensaje de error si algún
-     * campo obligatorio está vacío.
-     *
-     * @return Un mensaje de error con los campos faltantes, o una cadena vacía si no hay errores.
+     * Procedimiento para modificar una persona existente después de validar los datos.
      */
-    private String validarCampos() {
-        StringBuilder errorMessage = new StringBuilder();
+    void modificar() {
+        camposNulos = ""; // Reinicia la variable para campos nulos
+        try {
+            // Crear persona auxiliar para comprobar si ya existe
+            Persona pAux = new Persona(txtNombre.getText(), txtApellidos.getText(), Integer.parseInt(txtEdad.getText()));
+            // Verifica si la persona ya existe antes de modificarla
+            if (!EjercicioE_Principal_Control.listaPersonas.contains(pAux)) {
+                // Modifica la persona actual
+                EjercicioE_Principal_Control.listaPersonas.remove(EjercicioE_Principal_Control.p);
+                EjercicioE_Principal_Control.listaPersonas.add(pAux);
+                EjercicioE_Principal_Control.ventanaAlerta("I", "Persona modificada correctamente");
+            } else {
+                EjercicioE_Principal_Control.ventanaAlerta("E", "Persona existente");
+            }
 
-        // Valida que el campo nombre no esté vacío.
-        if (txtNombre.getText().trim().isEmpty()) {
-            errorMessage.append("El campo nombre es obligatorio.\n");
+        } catch (NullPointerException e) {
+            // Muestra alerta si hay campos vacíos
+            EjercicioE_Principal_Control.ventanaAlerta("E", camposNulos);
         }
-        // Valida que el campo apellidos no esté vacío.
-        if (txtApellidos.getText().trim().isEmpty()) {
-            errorMessage.append("El campo apellidos es obligatorio.\n");
-        }
-        // Valida que el campo edad no esté vacío.
-        if (txtEdad.getText().trim().isEmpty()) {
-            errorMessage.append("El campo edad es obligatorio.\n");
-        }
-
-        return errorMessage.toString();
     }
 
     /**
-     * Crea un nuevo objeto Persona a partir de los valores ingresados en los
-     * campos de texto.
+     * Procedimiento que se ejecuta al inicializar la ventana.
+     * Carga los datos de la persona si ya existen.
      *
-     * @return Un nuevo objeto Persona con los datos ingresados.
-     * @throws NumberFormatException
+     * @param url
+     * @param resourceBundle
      */
-    private Persona crearPersonaDesdeCampos() throws NumberFormatException {
-        // Obtiene el nombre, apellidos y edad desde los campos de texto.
-        String nombre = txtNombre.getText().trim();
-        String apellidos = txtApellidos.getText().trim();
-        int edad = Integer.parseInt(txtEdad.getText().trim());
-
-        // Verifica que la edad sea mayor a 0.
-        if (edad < 1) {
-            throw new NumberFormatException();
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        // Si ya hay apellidos, se cargan los datos en los campos de texto
+        if (!EjercicioE_Principal_Control.p.getApellidos().isEmpty()) {
+            txtNombre.setText(EjercicioE_Principal_Control.p.getNombre());
+            txtApellidos.setText(EjercicioE_Principal_Control.p.getApellidos());
+            txtEdad.setText(EjercicioE_Principal_Control.p.getEdad() + "");
         }
-
-        // Retorna una nueva instancia de Persona.
-        return new Persona(nombre, apellidos, edad);
     }
 }
+

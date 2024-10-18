@@ -23,7 +23,7 @@ import javafx.scene.layout.FlowPane;
 import javafx.stage.Stage;
 
 /**
- * Controlador principal del ejercicio D, que gestiona la ventana principal y
+ * Controlador principal del ejercicio E, que gestiona la ventana principal y
  * la tabla de personas.
  */
 public class EjercicioE_Principal_Control implements Initializable {
@@ -58,14 +58,16 @@ public class EjercicioE_Principal_Control implements Initializable {
     @FXML
     private TextField txtNombre;
 
+
     static ObservableList<Persona> listaPersonas;
+    static Persona p = new Persona("", "", 0);
 
     /**
      * Procedimiento que se llama cuando se inicializa la vista.
      * Configura las columnas de la tabla y enlaza los datos.
      *
-     * @param arg0
-     * @param arg1
+     * @param arg0 URL de inicialización.
+     * @param arg1 Recurso de inicialización.
      */
     @Override
     public void initialize(URL arg0, ResourceBundle arg1) {
@@ -82,28 +84,82 @@ public class EjercicioE_Principal_Control implements Initializable {
     }
 
     /**
-     * Procedimiento que abre una nueva ventana para agregar una persona.
+     * Procedimiento que prepara el formulario para agregar una nueva persona.
      *
-     * @param event El evento que dispara la acción, cuando se presiona el botón agregar.
+     * @param event
      */
     @FXML
     void agregarPersona(ActionEvent event) {
+        // Inicializa los valores de la persona.
+        p.setNombre("");
+        p.setApellidos("");
+        p.setEdad(0);
+        // Crea una nueva ventana auxiliar para agregar la persona.
+        crearVentanaAux();
+    }
+
+    /**
+     * Procedimiento para eliminar la persona seleccionada de la tabla.
+     *
+     * @param event
+     */
+    @FXML
+    void eliminarPersona(ActionEvent event) {
+        try {
+            // Obtiene los datos de la persona seleccionada.
+            String sNombreEliminado = tblvTabla.getSelectionModel().getSelectedItem().getNombre();
+            String sApellidosEliminado = tblvTabla.getSelectionModel().getSelectedItem().getApellidos();
+            Integer nEdadEliminado = tblvTabla.getSelectionModel().getSelectedItem().getEdad();
+
+            // Elimina la persona de la lista.
+            listaPersonas.remove(new Persona(sNombreEliminado, sApellidosEliminado, nEdadEliminado));
+            ventanaAlerta("I", "Persona eliminada correctamente");
+        } catch (NullPointerException e) {
+            // Si no hay selección, muestra una alerta.
+            ventanaAlerta("E", "Seleccione un registro de la tabla. Si no lo hay, añada uno.");
+        }
+    }
+
+    /**
+     * Procedimiento para modificar los datos de la persona seleccionada.
+     *
+     * @param event
+     */
+    @FXML
+    void modificarPersona(ActionEvent event) {
+        try {
+            // Obtiene los datos de la persona seleccionada y los carga en el objeto persona.
+            p.setNombre(tblvTabla.getSelectionModel().getSelectedItem().getNombre());
+            p.setApellidos(tblvTabla.getSelectionModel().getSelectedItem().getApellidos());
+            p.setEdad(tblvTabla.getSelectionModel().getSelectedItem().getEdad());
+            // Crea una ventana auxiliar para editar los datos de la persona.
+            crearVentanaAux();
+        } catch (NullPointerException e) {
+            // Si no hay selección, muestra una alerta.
+            ventanaAlerta("E", "Seleccione un registro de la tabla. Si no lo hay, añada uno.");
+        }
+    }
+
+    /**
+     * Procedimiento que crea una ventana auxiliar para añadir o modificar una persona.
+     */
+    void crearVentanaAux() {
         Stage escena = new Stage();
         escena.setTitle("NUEVA PERSONA");
         FlowPane flwPanel;
 
         try {
-            // Carga la vista FXML para agregar una nueva persona.
-            flwPanel = FXMLLoader.load(HelloApplication.class.getResource("ejerciciod_NuevaPersona.fxml"));
+            // Carga el archivo FXML para la nueva persona.
+            flwPanel = FXMLLoader.load(HelloApplication.class.getResource("ejercicioe_NuevaPersona.fxml"));
             Scene scene = new Scene(flwPanel, 600, 300);
             escena.setScene(scene);
 
-            // Configura los mínimos para el tamaño de la ventana.
+            // Configura las dimensiones mínimas de la ventana.
             escena.setMinHeight(300);
             escena.setMinWidth(600);
             escena.show();
         } catch (IOException e) {
-            // Si hay un error al cargar la vista, se imprime el stack trace.
+            // Si hay un error al cargar la vista, muestra el error.
             System.out.println("No ha sido posible abrir la ventana");
             e.printStackTrace();
         }
@@ -135,4 +191,5 @@ public class EjercicioE_Principal_Control implements Initializable {
         }
     }
 }
+
 

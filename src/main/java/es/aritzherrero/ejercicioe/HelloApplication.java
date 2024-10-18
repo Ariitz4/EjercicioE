@@ -7,7 +7,7 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.util.Objects;
+
 
 /**
  * Clase principal de la aplicación JavaFX.
@@ -27,7 +27,7 @@ public class HelloApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         // Cargar el archivo FXML que contiene la definición de la interfaz gráfica
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("ejerciciod_Principal.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("ejercicioe_principal.fxml"));
         //                             FXMLLoader.load(g          etClass().getResource(
         // Crear una nueva escena con el contenido cargado desde el archivo FXML
         Scene scene = new Scene(fxmlLoader.load(), 800, 600);
